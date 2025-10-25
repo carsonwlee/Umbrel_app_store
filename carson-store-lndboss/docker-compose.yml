@@ -16,16 +16,12 @@ services:
       BOS_DATA_PATH: /home/node/.bosgui
       NODE_ENV: production
       PORT: 8055
-      BOS_DEFAULT_LND_SOCKET: lnd:10009
+      BOS_DEFAULT_LND_SOCKET: ${APP_LIGHTNING_NODE_IP}:${APP_LIGHTNING_NODE_GRPC_PORT}
     volumes:
-      - lnd_data:/lnd:ro
+      - ${APP_LIGHTNING_NODE_DATA_DIR}:/lnd:ro
       - ${APP_DATA_DIR}:/home/node/.bosgui
     networks:
       - umbrel_main_network
-
-volumes:
-  lnd_data:
-    external: true
 
 networks:
   umbrel_main_network:
