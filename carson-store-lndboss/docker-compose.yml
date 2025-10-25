@@ -16,14 +16,10 @@ services:
       PORT: 8055
       BOS_DEFAULT_LND_SOCKET: lnd:10009
     volumes:
-      - lnd-data:/lnd:ro
+      - /home/umbrel/umbrel/app-data/lightning/data/lnd:/home/node/.lnd:ro
       - ${APP_DATA_DIR}:/home/node/.bosgui
     networks:
       - umbrel_main_network
-
-volumes:
-  lnd-data:
-    external: true
 
 networks:
   umbrel_main_network:
