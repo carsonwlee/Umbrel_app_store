@@ -26,7 +26,8 @@ gallery:
   - https://raw.githubusercontent.com/niteshbalusu11/lndboss/master/demo.mp4
 releaseNotes: >-
   LndBoss v2.19.0 - A comprehensive GUI for Balance of Satoshis with advanced Lightning Network management features.
-dependencies: []
+dependencies:
+  - lightning
 path: ""
 defaultUsername: ""
 defaultPassword: ""

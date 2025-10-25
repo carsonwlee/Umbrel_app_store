@@ -14,9 +14,9 @@ services:
       BOS_DATA_PATH: /home/node/.bosgui
       NODE_ENV: production
       PORT: 8055
-      BOS_DEFAULT_LND_SOCKET: lnd:10009
+      BOS_DEFAULT_LND_SOCKET: ${APP_LIGHTNING_NODE_IP}:10009
     volumes:
-      - /home/umbrel/umbrel/app-data/lightning/data/lnd:/home/node/.lnd:ro
+      - ${APP_LIGHTNING_NODE_DATA_DIR}:/home/node/.lnd:ro
       - ${APP_DATA_DIR}:/home/node/.bosgui
     networks:
       - umbrel_main_network
