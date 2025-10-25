@@ -1,0 +1,28 @@
+version: "3.7"
+
+services:
+
+  app_proxy:
+    environment:
+      # The format here is: <app-id>_<docker-service-name>_1
+      APP_HOST: carson-store-lndboss_server_1
+      APP_PORT: 8055
+    
+  server:
+    image: niteshbalusu/lndboss:latest
+    user: "1000:1000"
+    init: true
+    environment:
+      BOS_DATA_PATH: /home/node/.bosgui
+      NODE_ENV: production
+      PORT: 8055
+      BOS_DEFAULT_LND_SOCKET: ${APP_LIGHTNING_NODE_IP}:${APP_LIGHTNING_NODE_GRPC_PORT}
+    volumes:
+      - ${APP_LIGHTNING_NODE_DATA_DIR}:/lnd:ro
+      - ${APP_DATA_DIR}:/home/node/.bosgui
+    networks:
+      - umbrel_main_network
+
+networks:
+  umbrel_main_network:
+    external: true

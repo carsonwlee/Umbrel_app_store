@@ -1,0 +1,32 @@
+manifestVersion: 1
+id: carson-store-lndboss
+name: LndBoss
+tagline: A GUI for Balance of Satoshis
+icon: https://raw.githubusercontent.com/niteshbalusu11/lndboss/master/src/assets/icon.png
+category: Lightning Node Management
+version: "2.19.0"
+port: 8055
+description: >-
+  LndBoss is a web-based GUI for Balance of Satoshis (BOS), providing an intuitive interface for managing your Lightning Network node. 
+  
+  Features include:
+  - Channel management and rebalancing
+  - Payment routing and analysis
+  - Node statistics and monitoring
+  - Automated channel management tools
+  - And much more!
+
+developer: niteshbalusu11
+website: https://github.com/niteshbalusu11/lndboss
+submitter: Carson
+submission: https://github.com/niteshbalusu11/lndboss
+repo: https://github.com/niteshbalusu11/lndboss
+support: https://github.com/niteshbalusu11/lndboss/issues
+gallery:
+  - https://raw.githubusercontent.com/niteshbalusu11/lndboss/master/demo.mp4
+releaseNotes: >-
+  LndBoss v2.19.0 - A comprehensive GUI for Balance of Satoshis with advanced Lightning Network management features.
+dependencies: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
