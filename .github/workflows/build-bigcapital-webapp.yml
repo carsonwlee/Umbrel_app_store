@@ -1,0 +1,105 @@
+# Rebuild bigcapitalhq/webapp from tag v0.25.35 plus upstream PR 1310
+# (Generate API Key dialog wrapper). Pushes a public-pullable image for Umbrel.
+#
+# Tag: ghcr.io/carsonwlee/bigcapital-webapp:0.25.35-apikey
+#
+# First publish is private on GHCR. After this workflow succeeds, set the
+# package visibility to Public:
+# https://github.com/users/carsonwlee/packages/container/package/bigcapital-webapp
+
+name: Build patched BigCapital webapp
+
+on:
+  push:
+    branches:
+      - master
+      - "cursor/**"
+    paths:
+      - ".github/workflows/build-bigcapital-webapp.yml"
+      - "carson-store-bigcapital/webapp-image/**"
+  workflow_dispatch:
+
+env:
+  IMAGE: ghcr.io/carsonwlee/bigcapital-webapp
+  TAG: 0.25.35-apikey
+  BIGCAPITAL_REF: v0.25.35
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout this store
+        uses: actions/checkout@v4
+        with:
+          path: store
+
+      - name: Checkout bigcapitalhq/bigcapital at v0.25.35
+        uses: actions/checkout@v4
+        with:
+          repository: bigcapitalhq/bigcapital
+          ref: ${{ env.BIGCAPITAL_REF }}
+          path: bigcapital
+
+      - name: Apply PR 1310 (Generate API Key dialog)
+        run: bash store/carson-store-bigcapital/webapp-image/apply-pr-1310.sh bigcapital
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: bigcapital
+          file: store/carson-store-bigcapital/webapp-image/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: false
+          sbom: false
+          tags: ${{ env.IMAGE }}:${{ env.TAG }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/carsonwlee/Umbrel_app_store
+            org.opencontainers.image.title=bigcapital-webapp
+            org.opencontainers.image.description=BigCapital webapp v0.25.35 patched with upstream PR 1310 (Generate API Key dialog)
+            org.opencontainers.image.licenses=AGPL-3.0
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Print image digest
+        run: |
+          echo "Pushed ${{ env.IMAGE }}:${{ env.TAG }}"
+          echo "digest=${{ steps.build.outputs.digest }}"
+          echo "Pin in compose as:"
+          echo "  ${{ env.IMAGE }}:${{ env.TAG }}@${{ steps.build.outputs.digest }}"
+
+      - name: Attempt to make GHCR package public
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # No supported official API; try the undocumented visibility path.
+          # If this fails, set Public once in the package settings UI.
+          gh api --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/user/packages/container/bigcapital-webapp/visibility" \
+            -f visibility=public \
+            || gh api --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/users/carsonwlee/packages/container/bigcapital-webapp/visibility" \
+            -f visibility=public \
+            || echo "Could not change visibility via API. Set the package to Public in GitHub UI."

@@ -2,7 +2,7 @@ manifestVersion: 1.1
 id: carson-store-bigcapital
 category: finance
 name: BigCapital
-version: "0.25.35-2"
+version: "0.25.35-3"
 tagline: Open-source accounting software for small businesses
 icon: https://avatars.githubusercontent.com/u/63662386?s=256&v=4
 description: >-
@@ -25,14 +25,12 @@ description: >-
   10.2, so the app can run on both amd64 Umbrel Pro hardware and arm64 devices.
 
 releaseNotes: >-
-  Packaging revision 0.25.35-2 (upstream BigCapital is still 0.25.35). Merge
-  this, then use Update in the Umbrel UI — do not reinstall. Existing data
-  stays on disk.
+  Packaging revision 0.25.35-3 (upstream BigCapital is still 0.25.35). Merge
+  this, wait until ghcr.io/carsonwlee/bigcapital-webapp:0.25.35-apikey exists
+  and is public, then Update BigCapital in the Umbrel UI — do not reinstall.
+  Existing data stays on disk.
 
-  - Creates missing tenant databases from bigcapital_system.tenants and
-    GRANTs CREATE DATABASE without docker exec (sidecar talks to mysql on
-    the Docker network). Fixes Generate API key when a tenant row exists
-    but bigcapital_tenant_<id> was never created.
+  - Patched webapp so Generate API Key dialog actually opens (upstream #1310).
 
 developer: BigcapitalHQ
 website: https://bigcapital.app

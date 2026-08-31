@@ -22,7 +22,11 @@ services:
         condition: service_healthy
 
   webapp:
-    image: bigcapitalhq/webapp:v0.25.35@sha256:6fada2b8edbc8f1d87cd1d1c34a3cb83283675415591d1e7e602a0f76ee0ddaa
+    # Official bigcapitalhq/webapp is a prebuilt nginx bundle; copying .tsx
+    # into it does nothing. This image is v0.25.35 rebuilt with upstream
+    # PR 1310 (Generate API Key dialog). Built by
+    # .github/workflows/build-bigcapital-webapp.yml — do not use build:.
+    image: ghcr.io/carsonwlee/bigcapital-webapp:0.25.35-apikey
     restart: on-failure
     init: true
 
