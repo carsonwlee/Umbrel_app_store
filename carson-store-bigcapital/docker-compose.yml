@@ -59,6 +59,13 @@ services:
       BANK_FEED_ENABLED: "false"
       GOTENBERG_URL: http://gotenberg:3000
       GOTENBERG_DOCS_URL: http://server:3000/public/
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      MAIL_SECURE: "false"
+      MAIL_FROM_NAME: BigCapital
+      MAIL_FROM_ADDRESS: bigcapital@localhost
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
       PLAID_ENV: sandbox
       PLAID_CLIENT_ID: ""
       PLAID_SECRET: ""
@@ -84,6 +91,8 @@ services:
       database_migration:
         condition: service_completed_successfully
       gotenberg:
+        condition: service_started
+      mailpit:
         condition: service_started
 
   database_migration:
@@ -141,5 +150,12 @@ services:
   gotenberg:
     # Upstream compose exposes 9000; Gotenberg 7 listens on 3000.
     image: gotenberg/gotenberg:7.10.2@sha256:d03b8a04c6e6c5e568b38f57352266dee4674849b71818774025f8f48d869a9a
+    restart: on-failure
+    init: true
+
+  # Internal SMTP sink so signup/invoice mail does not hit 127.0.0.1:587.
+  # UI port 8025 is not published; this is not a separate Umbrel app.
+  mailpit:
+    image: axllent/mailpit:v1.31.0@sha256:c96991d9bef73594c246d89ca81411d4e916f03e76a7d2d72fa2ab5dd3c9ce24
     restart: on-failure
     init: true
