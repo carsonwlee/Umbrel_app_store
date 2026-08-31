@@ -26,9 +26,8 @@ description: >-
 
 releaseNotes: >-
   Packaging revision 0.25.35-3 (upstream BigCapital is still 0.25.35). Merge
-  this, wait until ghcr.io/carsonwlee/bigcapital-webapp:0.25.35-apikey exists
-  and is public, then Update BigCapital in the Umbrel UI — do not reinstall.
-  Existing data stays on disk.
+  this, then Update BigCapital in the Umbrel UI — do not reinstall. Existing
+  data stays on disk.
 
   - Patched webapp so Generate API Key dialog actually opens (upstream #1310).
 
