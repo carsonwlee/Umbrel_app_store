@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Apply tenant CREATE DATABASE grants after MariaDB is up.
+# grant.sql in docker-entrypoint-initdb.d only runs on first empty datadir.
+# This hook is idempotent, never drops data, and always exits 0 so a GRANT
+# that is already in place cannot fail the app. Do not enable xtrace here
+# (it would print the database password).
+
+set -u
+
+MYSQL_CONTAINER="carson-store-bigcapital_mysql_1"
+SQL="GRANT ALL PRIVILEGES ON *.* TO 'bigcapital'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+MAX_ATTEMPTS=15
+SLEEP_SECONDS=2
+
+# GRANT ALL ON *.* requires a superuser. The app user password
+# (APP_CARSON_STORE_BIGCAPITAL_DB_PASSWORD from exports.sh) cannot elevate
+# itself — that is the existing-install bug this hook fixes. Root password
+# is also exported by exports.sh.
+ROOT_PASSWORD="${APP_CARSON_STORE_BIGCAPITAL_DB_ROOT_PASSWORD:-}"
+
+if [[ -z "${ROOT_PASSWORD}" ]]; then
+  echo "post-start: APP_CARSON_STORE_BIGCAPITAL_DB_ROOT_PASSWORD is not set; skipping GRANT."
+  exit 0
+fi
+
+echo "post-start: waiting for ${MYSQL_CONTAINER} to accept connections..."
+
+attempt=1
+while (( attempt <= MAX_ATTEMPTS )); do
+  if docker exec "${MYSQL_CONTAINER}" healthcheck.sh --connect --innodb_initialized >/dev/null 2>&1; then
+    echo "post-start: MariaDB is up (attempt ${attempt}/${MAX_ATTEMPTS}). Applying GRANT."
+    # MYSQL_PWD keeps the password off the mysql argv. Do not echo it.
+    if docker exec \
+      -e MYSQL_PWD="${ROOT_PASSWORD}" \
+      "${MYSQL_CONTAINER}" \
+      mysql --user=root --batch --skip-column-names \
+      -e "${SQL}" >/dev/null 2>&1; then
+      echo "post-start: GRANT applied (idempotent)."
+      exit 0
+    fi
+    echo "post-start: GRANT command did not succeed (may already be in place). Continuing."
+    exit 0
+  fi
+  echo "post-start: MariaDB not ready yet (attempt ${attempt}/${MAX_ATTEMPTS})."
+  attempt=$((attempt + 1))
+  sleep "${SLEEP_SECONDS}"
+done
+
+echo "post-start: MariaDB did not become ready; skipping GRANT this start."
+exit 0

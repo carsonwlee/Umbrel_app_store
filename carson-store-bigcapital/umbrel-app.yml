@@ -1,8 +1,8 @@
-manifestVersion: 1
+manifestVersion: 1.1
 id: carson-store-bigcapital
 category: finance
 name: BigCapital
-version: "0.25.35"
+version: "0.25.35-1"
 tagline: Open-source accounting software for small businesses
 icon: https://avatars.githubusercontent.com/u/63662386?s=256&v=4
 description: >-
@@ -24,7 +24,15 @@ description: >-
   This package uses official MariaDB 10.11 instead of upstream's EOL MariaDB
   10.2, so the app can run on both amd64 Umbrel Pro hardware and arm64 devices.
 
-releaseNotes: ""
+releaseNotes: >-
+  Packaging revision 0.25.35-1 (upstream BigCapital is still 0.25.35). Use
+  Update in the Umbrel UI — do not reinstall.
+
+  - Envoy connect timeout is now 5s, and clusters use Umbrel-injected
+    container hostnames so /api does not 503 during signup login.
+  - Internal Mailpit SMTP so signup mail is not sent to 127.0.0.1:587.
+  - MariaDB GRANT for bigcapital on every start so tenant CREATE DATABASE
+    works on existing installs (init scripts only run on first empty volume).
 
 developer: BigcapitalHQ
 website: https://bigcapital.app
