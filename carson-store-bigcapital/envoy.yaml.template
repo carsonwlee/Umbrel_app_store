@@ -32,7 +32,7 @@ static_resources:
 
   clusters:
   - name: dynamic_server
-    connect_timeout: 0.25s
+    connect_timeout: 5s
     type: STRICT_DNS
     dns_lookup_family: V4_ONLY
     lb_policy: ROUND_ROBIN
@@ -43,11 +43,11 @@ static_resources:
         - endpoint:
             address:
               socket_address:
-                address: server
+                address: carson-store-bigcapital_server_1
                 port_value: 3000
 
   - name: webapp
-    connect_timeout: 0.25s
+    connect_timeout: 5s
     type: STRICT_DNS
     dns_lookup_family: V4_ONLY
     lb_policy: ROUND_ROBIN
@@ -58,5 +58,5 @@ static_resources:
         - endpoint:
             address:
               socket_address:
-                address: webapp
+                address: carson-store-bigcapital_webapp_1
                 port_value: 80
