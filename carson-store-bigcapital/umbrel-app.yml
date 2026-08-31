@@ -1,0 +1,46 @@
+manifestVersion: 1
+id: carson-store-bigcapital
+category: finance
+name: BigCapital
+version: "0.25.35"
+tagline: Open-source accounting software for small businesses
+icon: https://avatars.githubusercontent.com/u/63662386?s=256&v=4
+description: >-
+  BigCapital is self-hosted, open-source accounting and inventory software for
+  small businesses. It is not QuickBooks or a cloud subscription — your books
+  stay on your Umbrel.
+
+
+  First run: there is no default login. Open BigCapital in your browser and
+  create the first account from the signup screen. Umbrel login is not used in
+  front of this app, because BigCapital has its own signup and session.
+
+
+  You can invoice, track expenses, manage inventory, and generate financial
+  reports. Email (invoice delivery and similar) is optional: it works without
+  SMTP, and you can add a mail server later if you want those features.
+
+
+  This package uses official MariaDB 10.11 instead of upstream's EOL MariaDB
+  10.2, so the app can run on both amd64 Umbrel Pro hardware and arm64 devices.
+
+releaseNotes: ""
+
+developer: BigcapitalHQ
+website: https://bigcapital.app
+dependencies: []
+repo: https://github.com/bigcapitalhq/bigcapital
+support: https://github.com/bigcapitalhq/bigcapital/issues
+
+port: 3848
+gallery:
+  - https://raw.githubusercontent.com/abouolia/blog/main/public/screenshot-1.png
+  - https://raw.githubusercontent.com/abouolia/blog/main/public/screenshot-2.png
+  - https://raw.githubusercontent.com/abouolia/blog/main/public/screenshot-3.png
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: Carson
+submission: https://github.com/carsonwlee/Umbrel_app_store/pull/1
