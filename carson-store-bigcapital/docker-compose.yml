@@ -1,0 +1,145 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      # The format here is: <app-id>_<docker-service-name>_1
+      APP_HOST: carson-store-bigcapital_proxy_1
+      APP_PORT: 80
+      # BigCapital has its own signup/login. Umbrel auth would break the SPA/API.
+      PROXY_AUTH_ADD: "false"
+
+  proxy:
+    image: envoyproxy/envoy:v1.30.11@sha256:b5cc70f5fe5503858817e897ae1da5d873dc32cbc493790b4e330b8a42c4af9d
+    restart: on-failure
+    init: true
+    volumes:
+      - ${APP_DATA_DIR}/envoy.yaml:/etc/envoy/envoy.yaml:ro
+    depends_on:
+      webapp:
+        condition: service_started
+      server:
+        condition: service_healthy
+
+  webapp:
+    image: bigcapitalhq/webapp:v0.25.35@sha256:6fada2b8edbc8f1d87cd1d1c34a3cb83283675415591d1e7e602a0f76ee0ddaa
+    restart: on-failure
+    init: true
+
+  server:
+    image: bigcapitalhq/server:v0.25.35@sha256:f2d19c378e2fab5c518f29b23559410b5ad9211ecce67d39734f8206fca1b368
+    restart: on-failure
+    init: true
+    # Override the image HEALTHCHECK (/api/system_db). TCP is enough for Envoy
+    # to start routing; the image check 404'd on older tags (fixed in v0.24+).
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "require('net').connect({port:3000,host:'127.0.0.1'}).on('connect',function(){this.end();process.exit(0)}).on('error',function(){process.exit(1)})"
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+    environment:
+      DB_HOST: mysql
+      DB_USER: bigcapital
+      DB_PASSWORD: ${APP_CARSON_STORE_BIGCAPITAL_DB_PASSWORD}
+      DB_CHARSET: utf8
+      SYSTEM_DB_NAME: bigcapital_system
+      TENANT_DB_NAME_PERFIX: bigcapital_tenant_
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QUEUE_HOST: redis
+      QUEUE_PORT: 6379
+      JWT_SECRET: ${APP_CARSON_STORE_BIGCAPITAL_JWT_SECRET}
+      BASE_URL: http://${DEVICE_DOMAIN_NAME}:${APP_PROXY_PORT}
+      SIGNUP_DISABLED: "false"
+      SIGNUP_EMAIL_CONFIRMATION: "false"
+      HOSTED_ON_BIGCAPITAL_CLOUD: "false"
+      BANK_FEED_ENABLED: "false"
+      GOTENBERG_URL: http://gotenberg:3000
+      GOTENBERG_DOCS_URL: http://server:3000/public/
+      PLAID_ENV: sandbox
+      PLAID_CLIENT_ID: ""
+      PLAID_SECRET: ""
+      PLAID_LINK_WEBHOOK: ""
+      LEMONSQUEEZY_API_KEY: ""
+      LEMONSQUEEZY_STORE_ID: ""
+      LEMONSQUEEZY_WEBHOOK_SECRET: ""
+      S3_REGION: ""
+      S3_ACCESS_KEY_ID: ""
+      S3_SECRET_ACCESS_KEY: ""
+      S3_ENDPOINT: ""
+      S3_BUCKET: ""
+      STRIPE_PAYMENT_SECRET_KEY: ""
+      STRIPE_PAYMENT_PUBLISHABLE_KEY: ""
+      STRIPE_PAYMENT_CLIENT_ID: ""
+      STRIPE_PAYMENT_WEBHOOKS_SECRET: ""
+      STRIPE_PAYMENT_REDIRECT_URL: ""
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      database_migration:
+        condition: service_completed_successfully
+      gotenberg:
+        condition: service_started
+
+  database_migration:
+    image: bigcapitalhq/server:v0.25.35@sha256:f2d19c378e2fab5c518f29b23559410b5ad9211ecce67d39734f8206fca1b368
+    restart: on-failure
+    working_dir: /app/packages/server
+    command:
+      - sh
+      - -c
+      - node dist/cli.js system:migrate:latest && node dist/cli.js tenants:migrate:latest
+    environment:
+      DB_HOST: mysql
+      DB_USER: bigcapital
+      DB_PASSWORD: ${APP_CARSON_STORE_BIGCAPITAL_DB_PASSWORD}
+      DB_CHARSET: utf8
+      SYSTEM_DB_NAME: bigcapital_system
+      TENANT_DB_NAME_PERFIX: bigcapital_tenant_
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mariadb:10.11.19@sha256:ce66c7be32a03aabe7241d0a10993a2db827ef652a35d25727d92a832ac8ef73
+    user: "1000:1000"
+    restart: on-failure
+    stop_grace_period: 1m
+    environment:
+      MYSQL_DATABASE: bigcapital_system
+      MYSQL_USER: bigcapital
+      MYSQL_PASSWORD: ${APP_CARSON_STORE_BIGCAPITAL_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${APP_CARSON_STORE_BIGCAPITAL_DB_ROOT_PASSWORD}
+      MARIADB_AUTO_UPGRADE: "true"
+    volumes:
+      - ${APP_DATA_DIR}/data/mysql:/var/lib/mysql
+      - ${APP_DATA_DIR}/data/mysql-init/grant.sql:/docker-entrypoint-initdb.d/grant.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  redis:
+    image: redis:6.2.21@sha256:5443f35e8fc8fc8496964b8e8ea39abaf99434d7e1741e514f7f56906b1c9ff0
+    user: "1000:1000"
+    restart: on-failure
+    volumes:
+      - ${APP_DATA_DIR}/data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  gotenberg:
+    # Upstream compose exposes 9000; Gotenberg 7 listens on 3000.
+    image: gotenberg/gotenberg:7.10.2@sha256:d03b8a04c6e6c5e568b38f57352266dee4674849b71818774025f8f48d869a9a
+    restart: on-failure
+    init: true
