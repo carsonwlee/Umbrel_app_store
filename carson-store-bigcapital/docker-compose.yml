@@ -26,7 +26,7 @@ services:
     # into it does nothing. This image is v0.25.35 rebuilt with upstream
     # PR 1310 (Generate API Key dialog). Built by
     # .github/workflows/build-bigcapital-webapp.yml — do not use build:.
-    image: ghcr.io/carsonwlee/bigcapital-webapp:0.25.35-apikey
+    image: ghcr.io/carsonwlee/bigcapital-webapp:0.25.35-apikey@sha256:2c2bec3adda44763c458006c814dae99252482d5453f196138c5821c9938e897
     restart: on-failure
     init: true
 
