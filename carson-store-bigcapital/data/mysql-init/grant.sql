@@ -1,6 +1,6 @@
--- Runs only on first MariaDB volume init (docker-entrypoint-initdb.d).
--- The official image already creates MYSQL_USER (bigcapital) with rights on
--- MYSQL_DATABASE. Tenant DBs need CREATE DATABASE, matching upstream:
--- GRANT ALL PRIVILEGES ON *.* TO '{user}'@'%' ... WITH GRANT OPTION.
+-- First-volume init only (docker-entrypoint-initdb.d). MariaDB 10.11.
+-- MYSQL_USER already creates 'bigcapital' with rights on MYSQL_DATABASE only.
+-- Tenant schemas need CREATE DATABASE on *.*, same as upstream init.sql.
+CREATE USER IF NOT EXISTS 'bigcapital'@'%';
 GRANT ALL PRIVILEGES ON *.* TO 'bigcapital'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
