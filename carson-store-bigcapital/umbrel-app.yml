@@ -2,7 +2,7 @@ manifestVersion: 1.1
 id: carson-store-bigcapital
 category: finance
 name: BigCapital
-version: "0.25.35-1"
+version: "0.25.35-2"
 tagline: Open-source accounting software for small businesses
 icon: https://avatars.githubusercontent.com/u/63662386?s=256&v=4
 description: >-
@@ -25,14 +25,14 @@ description: >-
   10.2, so the app can run on both amd64 Umbrel Pro hardware and arm64 devices.
 
 releaseNotes: >-
-  Packaging revision 0.25.35-1 (upstream BigCapital is still 0.25.35). Use
-  Update in the Umbrel UI — do not reinstall.
+  Packaging revision 0.25.35-2 (upstream BigCapital is still 0.25.35). Merge
+  this, then use Update in the Umbrel UI — do not reinstall. Existing data
+  stays on disk.
 
-  - Envoy connect timeout is now 5s, and clusters use Umbrel-injected
-    container hostnames so /api does not 503 during signup login.
-  - Internal Mailpit SMTP so signup mail is not sent to 127.0.0.1:587.
-  - MariaDB GRANT for bigcapital on every start so tenant CREATE DATABASE
-    works on existing installs (init scripts only run on first empty volume).
+  - Creates missing tenant databases from bigcapital_system.tenants and
+    GRANTs CREATE DATABASE without docker exec (sidecar talks to mysql on
+    the Docker network). Fixes Generate API key when a tenant row exists
+    but bigcapital_tenant_<id> was never created.
 
 developer: BigcapitalHQ
 website: https://bigcapital.app
