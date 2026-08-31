@@ -29,9 +29,9 @@ attempt=1
 while (( attempt <= MAX_ATTEMPTS )); do
   if docker exec "${MYSQL_CONTAINER}" healthcheck.sh --connect --innodb_initialized >/dev/null 2>&1; then
     echo "post-start: MariaDB is up (attempt ${attempt}/${MAX_ATTEMPTS}). Applying GRANT."
-    # MYSQL_PWD keeps the password off the mysql argv. Do not echo it.
-    if docker exec \
-      -e MYSQL_PWD="${ROOT_PASSWORD}" \
+    # -e MYSQL_PWD (no =value) copies from this environment so the password
+    # is not on docker's argv / ps. Do not echo it. Do not set -x.
+    if MYSQL_PWD="${ROOT_PASSWORD}" docker exec -e MYSQL_PWD \
       "${MYSQL_CONTAINER}" \
       mysql --user=root --batch --skip-column-names \
       -e "${SQL}" >/dev/null 2>&1; then
